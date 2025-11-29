@@ -9,13 +9,13 @@ import matplotlib.pyplot as plt
 data = pd.read_csv('timeData.csv')
 
 # Convert time to milliseconds for better readability
-data[' Time.'] = data[' Time.'] * 1000  # Convert seconds to milliseconds
+data[' Time'] = data[' Time'] * 1000  # Convert seconds to milliseconds
 
 # Define the three groups of Algorithm for plotting
 plot_groups = [
     {'Algorithm': ['thrust'], 'title': 'Thrust Solution', 'filename': 'thrustPlot.png'},
-    {'Algorithm': ['singlethread'], 'title': 'Quick Sort vs STL', 'filename': 'singlethreadPlot.png'},
-    {'Algorithm': ['multithread'], 'title': 'Merge Sort vs STL', 'filename': 'multithreadPlot.png'}
+    {'Algorithm': ['singlethread'], 'title': 'Singlethread Solution', 'filename': 'singlethreadPlot.png'},
+    {'Algorithm': ['multithread'], 'title': 'Multithread Solution', 'filename': 'multithreadPlot.png'}
 ]
 
 # Generate a separate plot for each group
@@ -23,11 +23,11 @@ for group in plot_groups:
     plt.figure(figsize=(10, 6))
     for algo in group['Algorithm']:
         algo_data = data[data['Algorithm'] == algo]
-        plt.plot(algo_data[' Size'], algo_data[' Time'], marker='o', label=algo)
+        plt.plot(algo_data[' Size'], algo_data[' Time], marker='o', label=algo)
 
     # Customize plot
     plt.xlabel('Array Size')
-    plt.ylabel('Time (milliseconds)')
+    plt.ylabel('Time(milliseconds)')
     plt.title(group['title'])
     plt.legend()
     plt.grid(True)
