@@ -1,0 +1,16 @@
+Algorithm, Size, Time
+thrust, 10000, 0.00195984
+singlethread, 10000, 0.0126241
+multithread, 10000, 0.00137043
+thrust, 50000, 0.00377888
+singlethread, 50000, 0.0938515
+multithread, 50000, 0.00586218
+thrust, 100000, 0.00473965
+singlethread, 100000, 0.199689
+multithread, 100000, 0.0115281
+thrust, 500000, 0.0189717
+singlethread, 500000, 1.12276
+multithread, 500000, 0.168975
+thrust, 1000000, 0.0373561
+singlethread, 1000000, 2.36892
+multithread, 1000000, 0.676992
