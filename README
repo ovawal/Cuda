@@ -10,7 +10,7 @@ The graphs were developed on my local system.
 Type 
 	'make' : build all executables.
 	'time' : Genrate the times for each algorithm saved on timeData.csv.
-	'graph': Generate the plots 
+	'plots': Generate the plots 
 	'clean': Delete all generated files.
 
 Note:
