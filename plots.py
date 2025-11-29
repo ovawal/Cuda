@@ -23,7 +23,7 @@ for group in plot_groups:
     plt.figure(figsize=(10, 6))
     for algo in group['Algorithm']:
         algo_data = data[data['Algorithm'] == algo]
-        plt.plot(algo_data[' Size'], algo_data[' Time], marker='o', label=algo)
+        plt.plot(algo_data[' Size'], algo_data[' Time'], marker='o', label=algo)
 
     # Customize plot
     plt.xlabel('Array Size')
