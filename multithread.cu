@@ -1,13 +1,13 @@
 #include <cuda_runtime.h>
+#include <cub/cub.cuh>
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
-#include <climits>
 
 using namespace std;
 
 /**********************************************************
- * error checking (unchanged)
+ * error checking (unchanged from skeleton)
  ***********************************************************/
 #define CUDA_CHECK_ERROR
 #define CudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
@@ -16,7 +16,11 @@ using namespace std;
 inline void __cudaSafeCall( cudaError err, const char *file, const int line )
 {
 #ifdef CUDA_CHECK_ERROR
-    do { if (cudaSuccess != err) { fprintf(stderr, "cudaSafeCall() failed at %s:%i : %s\n", file, line, cudaGetErrorString(err)); exit(-1); } } while(0);
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaSafeCall() failed at %s:%i : %s\n",
+                file, line, cudaGetErrorString(err));
+        exit(-1);
+    }
 #endif
     return;
 }
@@ -24,12 +28,18 @@ inline void __cudaSafeCall( cudaError err, const char *file, const int line )
 inline void __cudaCheckError( const char *file, const int line )
 {
 #ifdef CUDA_CHECK_ERROR
-    do {
-        cudaError_t err = cudaGetLastError();
-        if (cudaSuccess != err) { fprintf(stderr, "cudaCheckError() failed at %s:%i : %s.\n", file, line, cudaGetErrorString(err)); exit(-1); }
-        err = cudaDeviceSynchronize();
-        if (cudaSuccess != err) { fprintf(stderr, "cudaCheckError() with sync failed at %s:%i : %s.\n", file, line, cudaGetErrorString(err)); exit(-1); }
-    } while(0);
+    cudaError_t err = cudaGetLastError();
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaCheckError() failed at %s:%i : %s.\n",
+                file, line, cudaGetErrorString(err));
+        exit(-1);
+    }
+    err = cudaDeviceSynchronize();
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaCheckError() with sync failed at %s:%i : %s.\n",
+                file, line, cudaGetErrorString(err));
+        exit(-1);
+    }
 #endif
     return;
 }
@@ -42,39 +52,6 @@ int * makeRandArray( const int size, const int seed )
         array[i] = rand() % 1000000;
     }
     return array;
-}
-
-//*******************************//
-// MASSIVELY PARALLEL ODD-EVEN MERGE SORT (works for any N)
-//*******************************//
-__global__ void oddEvenMergeSort(int *arr, int n)
-{
-    extern __shared__ int s[];
-
-    int tid  = threadIdx.x;
-    int idx  = blockIdx.x * blockDim.x + threadIdx.x;
-
-    // Load data (pad with INT_MAX if out of bounds)
-    s[tid] = (idx < n) ? arr[idx] : INT_MAX;
-    __syncthreads();
-
-    // Odd-Even Transposition Sort inside each block
-    for (int phase = 0; phase < n; ++phase) {
-        if (phase & 1) {
-            // odd phase
-            if ((tid & 1) && tid + 1 < blockDim.x)
-                if (s[tid] > s[tid + 1]) { int tmp = s[tid]; s[tid] = s[tid+1]; s[tid+1] = tmp; }
-        } else {
-            // even phase
-            if ((tid & 1) == 0 && tid + 1 < blockDim.x)
-                if (s[tid] > s[tid + 1]) { int tmp = s[tid]; s[tid] = s[tid+1]; s[tid+1] = tmp; }
-        }
-        __syncthreads();
-    }
-
-    // Write back only valid elements
-    if (idx < n)
-        arr[idx] = s[tid];
 }
 
 int main( int argc, char* argv[] )
@@ -99,21 +76,37 @@ int main( int argc, char* argv[] )
     cudaEventRecord(start, 0);
 
     /////////////////////////////////////////////////////////////////////
-    // YOUR CODE HERE – MASSIVELY PARALLEL SORT
+    // MASSIVELY PARALLEL SORT USING NVIDIA CUB (the real deal)
     /////////////////////////////////////////////////////////////////////
 
-    int *d_arr;
+    int *d_arr = nullptr;
+    void *d_temp_storage = nullptr;
+    size_t temp_bytes = 0;
+
     CudaSafeCall( cudaMalloc(&d_arr, size * sizeof(int)) );
     CudaSafeCall( cudaMemcpy(d_arr, array, size * sizeof(int), cudaMemcpyHostToDevice) );
 
-    const int THREADS_PER_BLOCK = 1024;
-    int blocks = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    // First call: compute required temporary storage size
+    cub::DeviceRadixSort::SortKeys(
+        d_temp_storage, temp_bytes,
+        d_arr, d_arr, size);
 
-    oddEvenMergeSort<<<blocks, THREADS_PER_BLOCK, THREADS_PER_BLOCK * sizeof(int)>>>(d_arr, size);
+    // Allocate temporary storage
+    CudaSafeCall( cudaMalloc(&d_temp_storage, temp_bytes) );
+
+    // Launch the actual sort — thousands of threads, ultra fast
+    cub::DeviceRadixSort::SortKeys(
+        d_temp_storage, temp_bytes,
+        d_arr, d_arr, size);
+
     CudaCheckError();
 
+    // Copy sorted result back
     CudaSafeCall( cudaMemcpy(array, d_arr, size * sizeof(int), cudaMemcpyDeviceToHost) );
+
+    // Cleanup
     CudaSafeCall( cudaFree(d_arr) );
+    CudaSafeCall( cudaFree(d_temp_storage) );
 
     /////////////////////////////////////////////////////////////////////
 
@@ -125,10 +118,10 @@ int main( int argc, char* argv[] )
 
     cerr << "Total time in seconds: " << timeTotal / 1000.0 << endl;
 
-    // Always print the sorted array
+    // Print sorted array
     for (int i = 0; i < size; ++i) {
         cout << array[i];
-        if (i < size-1) cout << " ";
+        if (i < size - 1) cout << " ";
     }
     cout << endl;
 
