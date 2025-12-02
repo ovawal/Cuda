@@ -2,7 +2,6 @@
 #include <thrust/device_vector.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
-
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
@@ -10,7 +9,7 @@
 
 using namespace std;       
 
-define CUDA_CHECK_ERROR
+#define CUDA_CHECK_ERROR
 #define CudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 #define CudaCheckError() __cudaCheckError( __FILE__, __LINE__ )
 
