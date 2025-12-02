@@ -9,10 +9,8 @@
 
 
 using namespace std;       
-/* -------------------------------------------------------------- */
-/*   error-checking macros (unchanged)                           */
-/* -------------------------------------------------------------- */
-#define CUDA_CHECK_ERROR
+
+define CUDA_CHECK_ERROR
 #define CudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 #define CudaCheckError() __cudaCheckError( __FILE__, __LINE__ )
 
@@ -68,7 +66,7 @@ int * makeRandArray( const int size, const int seed )
     return array;
 }
 
-//   kernel placeholder (unchanged)                             
+//   kernel placeholder                             
 __global__ void matavgKernel( ) { }
 
 
@@ -96,22 +94,19 @@ int main( int argc, char* argv[] )
     }
 
     // get the random numbers
-    array = makeRandArray( size, seed );   // NOTE: skeleton bug – should be makeRandArray
-
-    /***********************************
-     * create a cuda timer to time execution
-     **********************************/
+    array = makeRandArray( size, seed );       
+    
+    // create a cuda timer to time execution
+    
     cudaEvent_t startTotal, stopTotal;
     float timeTotal;
     cudaEventCreate(&startTotal);
     cudaEventCreate(&stopTotal);
     cudaEventRecord( startTotal, 0 );
 
-    /***********************************
-     * end of cuda timer creation
-     **********************************/
+       // end of cuda timer creation
 
-    /////////////////////////////////////////////////////////////////////
+       /////////////////////////////////////////////////////////////////////
     /////////////////////// YOUR CODE HERE ///////////////////////
     /////////////////////////////////////////////////////////////////////
 
@@ -131,18 +126,16 @@ int main( int argc, char* argv[] )
 
     CudaCheckError();
 
-    /***********************************
-     * Stop and destroy the cuda timer
-     **********************************/
+     // Stop and destroy the cuda timer
+    
     cudaEventRecord( stopTotal, 0 );
     cudaEventSynchronize( stopTotal );
     cudaEventElapsedTime( &timeTotal, startTotal, stopTotal );
     cudaEventDestroy( startTotal );
     cudaEventDestroy( stopTotal );
 
-    /***********************************
-     * end of cuda timer destruction
-     **********************************/
+    // end of cuda timer destruction
+     
 
     cerr << "Total time in seconds: " << timeTotal / 1000.0 << endl;
 

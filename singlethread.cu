@@ -5,9 +5,9 @@
 
 using namespace std;
 
-/**********************************************************
- * error checking stuff (unchanged from skeleton)
- ***********************************************************/
+
+ // error checking 
+
 #define CUDA_CHECK_ERROR
 #define CudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 #define CudaCheckError() __cudaCheckError( __FILE__, __LINE__ )
@@ -43,9 +43,8 @@ int * makeRandArray( const int size, const int seed )
     return array;
 }
 
-//*******************************//
 // SINGLE THREAD BOTTOM-UP MERGE SORT (NO RECURSION!)
-//*******************************//
+
 __device__ void merge(int arr[], int temp[], int left, int mid, int right)
 {
     int i = left, j = mid + 1, k = left;
@@ -120,8 +119,7 @@ int main( int argc, char* argv[] )
     CudaSafeCall( cudaFree(d_data) );
     CudaSafeCall( cudaFree(d_temp) );
 
-    /////////////////////////////////////////////////////////////////////
-
+    // Timer
     cudaEventRecord( stopTotal, 0 );
     cudaEventSynchronize( stopTotal );
     cudaEventElapsedTime( &timeTotal, startTotal, stopTotal );

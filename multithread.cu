@@ -6,9 +6,8 @@
 
 using namespace std;
 
-/**********************************************************
- * error checking (unchanged from skeleton)
- ***********************************************************/
+// error checking 
+
 #define CUDA_CHECK_ERROR
 #define CudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
 #define CudaCheckError() __cudaCheckError( __FILE__, __LINE__ )
@@ -60,7 +59,7 @@ int main( int argc, char* argv[] )
     int *array;
 
     if (argc < 3) {
-        cerr << "usage: " << argv[0] << " [N] [seed]\n";
+        cerr << "usage: " << argv[0] << " [amount of random nums to generateseed] [seed value for random number generation]\n";
         return -1;
     }
 
@@ -75,9 +74,9 @@ int main( int argc, char* argv[] )
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
 
-    /////////////////////////////////////////////////////////////////////
-    // MASSIVELY PARALLEL SORT USING NVIDIA CUB (the real deal)
-    /////////////////////////////////////////////////////////////////////
+    
+    // Massively Parralel using Nvidia Radix sort
+    
 
     int *d_arr = nullptr;
     void *d_temp_storage = nullptr;
@@ -108,7 +107,7 @@ int main( int argc, char* argv[] )
     CudaSafeCall( cudaFree(d_arr) );
     CudaSafeCall( cudaFree(d_temp_storage) );
 
-    /////////////////////////////////////////////////////////////////////
+   // Timer 
 
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
